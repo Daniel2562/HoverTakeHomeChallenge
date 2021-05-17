@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { FlatList, ListRenderItem } from 'react-native';
+import React, { useCallback, useState, useRef } from 'react';
+import { FlatList, ListRenderItem, ViewToken } from 'react-native';
 
 import { usePosts, useViewLayout } from '../hooks';
 import PostItem from './PostItem';
@@ -9,12 +9,24 @@ interface PostListProps {}
 const PostList: React.FC<PostListProps> = () => {
   const posts = usePosts(2);
   const [viewLayout, onViewLayout] = useViewLayout();
+  const [focusedItemId, setFocusedItemId] = useState<string>("0");
+
+  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 })
+  const onViewRef = useRef((info: { viewableItems: Array<ViewToken>; changed: Array<ViewToken> })=> {
+    const { viewableItems } = info;
+    const [viewableItem] = viewableItems;
+    if (viewableItem) {
+      setFocusedItemId(viewableItem.key);
+    } else {
+      setFocusedItemId("0");
+    }
+  })
 
   const renderItem: ListRenderItem<Post> = useCallback(
     ({ item: post }) => {
-      return <PostItem key={post.id} post={post} size={viewLayout} />;
+      return <PostItem key={post.id} post={post} size={viewLayout} focused={post.id !== focusedItemId} />;
     },
-    [viewLayout],
+    [viewLayout, focusedItemId],
   );
 
   const getItemLayout = useCallback(
@@ -38,6 +50,8 @@ const PostList: React.FC<PostListProps> = () => {
       snapToAlignment="start"
       pagingEnabled
       removeClippedSubviews
+      onViewableItemsChanged={onViewRef.current}
+      viewabilityConfig={viewConfigRef.current}
     />
   );
 };

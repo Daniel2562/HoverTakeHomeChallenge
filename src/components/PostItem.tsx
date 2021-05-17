@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ImageBackground } from 'react-native';
 
 import Video from './Video';
@@ -6,8 +6,9 @@ import Video from './Video';
 interface PostItemProps {
   post: Post;
   size: { width: number; height: number };
+  focused: boolean;
 }
-const PostItem: React.FC<PostItemProps> = ({ post, size }) => {
+const PostItem: React.FC<PostItemProps> = ({ post, size, focused }) => {
   return (
     <ImageBackground
       key={post.thumbnailUrl}
@@ -24,6 +25,7 @@ const PostItem: React.FC<PostItemProps> = ({ post, size }) => {
         source={{ uri: post.videoUrl }}
         resizeMode="cover"
         repeat
+        paused={focused}
       />
     </ImageBackground>
   );
